@@ -1,0 +1,109 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #0c0c2a;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.game-container {
+    width: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #000;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 255, 0.5);
+}
+
+.game-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffcc00;
+}
+
+#gameCanvas {
+    background-color: #87ceeb;
+    border: 4px solid #333;
+    width: 760px;
+    height: 480px;
+}
+
+.controls-info {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 16px;
+    color: #7df9ff;
+}
+
+#startButton {
+    margin-top: 10px;
+    padding: 8px 20px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #ff3300;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#startButton:hover {
+    background-color: #ff6600;
+    transform: scale(1.05);
+}
+
+/* Game elements */
+.sonic {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+}
+
+.ring {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background-color: #ffcc00;
+    border-radius: 50%;
+    animation: spin 1s infinite linear;
+}
+
+.enemy {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 820px) {
+    .game-container {
+        width: 95%;
+    }
+    
+    #gameCanvas {
+        width: 100%;
+        height: auto;
+    }
+}
