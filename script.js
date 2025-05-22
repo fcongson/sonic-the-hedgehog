@@ -22,7 +22,9 @@ const sonic = {
     spriteX: 0,
     frameCount: 0,
     frameDelay: 5,
-    currentFrame: 0
+    currentFrame: 0,
+    invulnerable: false,
+    invulnerableTimer: 0
 };
 
 // Game elements
@@ -405,25 +407,36 @@ function keyUpHandler(e) {
     }
 }
 
-// Start the game
+// Start/Restart the game
 function startGame() {
-    if (!gameStarted) {
-        gameStarted = true;
-        gameOver = false;
-        score = 0;
-        lives = 3;
-        sonic.x = 100;
-        sonic.y = 400;
-        sonic.velocityY = 0;
-        
-        createRings();
-        createEnemies();
-        
-        document.getElementById('score').textContent = score;
-        document.getElementById('lives').textContent = lives;
-        
-        gameLoop();
+    // Reset game state
+    gameStarted = true;
+    gameOver = false;
+    score = 0;
+    lives = 3;
+    sonic.x = 100;
+    sonic.y = 400;
+    sonic.velocityY = 0;
+    sonic.isJumping = false;
+    
+    // Reset enemies and rings
+    createEnemies();
+    createRings();
+    
+    // Update UI
+    document.getElementById('score').textContent = score;
+    document.getElementById('lives').textContent = lives;
+    
+    // Cancel any existing animation loop
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
     }
+    
+    // Start new game loop
+    gameLoop();
+    
+    // Remove focus from the button to prevent spacebar from triggering it
+    document.getElementById('startButton').blur();
 }
 
 // Game loop
@@ -493,25 +506,37 @@ function update() {
     
     // Check enemy collisions
     for (let i = 0; i < enemies.length; i++) {
-        if (sonic.x + sonic.width > enemies[i].x && 
-            sonic.x < enemies[i].x + enemies[i].width && 
-            sonic.y + sonic.height > enemies[i].y && 
-            sonic.y < enemies[i].y + enemies[i].height) {
+        const enemy = enemies[i];
+        if (sonic.x + sonic.width > enemy.x && 
+            sonic.x < enemy.x + enemy.width && 
+            sonic.y + sonic.height > enemy.y && 
+            sonic.y < enemy.y + enemy.height) {
             
-            // Lose a life
-            lives--;
-            document.getElementById('lives').textContent = lives;
-            
-            // Reset Sonic position
-            sonic.x = 100;
-            sonic.y = 400;
-            sonic.velocityY = 0;
-            
-            if (lives <= 0) {
-                gameOver = true;
+            // Check if Sonic is stomping the enemy from above
+            if (sonic.velocityY > 0 && sonic.y + sonic.height < enemy.y + 10) {
+                // Stomp the enemy
+                enemies.splice(i, 1);
+                sonic.velocityY = -sonic.jumpForce * 0.8; // Small bounce
+                score += 100;
+                document.getElementById('score').textContent = score;
+                break;
+            } else if (!sonic.invulnerable) {
+                // Take damage
+                lives = Math.max(lives - 1, 0);
+                document.getElementById('lives').textContent = lives;
+                
+                // Reset Sonic position and set invulnerability
+                sonic.x = 100;
+                sonic.y = 400;
+                sonic.velocityY = 0;
+                sonic.invulnerable = true;
+                sonic.invulnerableTimer = 90; // 1.5 seconds at 60fps
+                
+                if (lives === 0) {
+                    gameOver = true;
+                }
+                break;
             }
-            
-            break;
         }
     }
     
@@ -533,6 +558,14 @@ function update() {
         sonic.y = canvas.height - sonic.height;
         sonic.velocityY = 0;
         sonic.isJumping = false;
+    }
+    
+    // Update invulnerability timer
+    if (sonic.invulnerable) {
+        sonic.invulnerableTimer--;
+        if (sonic.invulnerableTimer <= 0) {
+            sonic.invulnerable = false;
+        }
     }
     
     // Update animation frame
